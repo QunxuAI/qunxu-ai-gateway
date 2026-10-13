@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>qunxu-framework</artifactId>
+        <groupId>tech.qunxu</groupId>
+        <version>${revision}</version>
+    </parent>
+    <artifactId>qunxu-spring-boot-starter-excel</artifactId>
+    <description>Excel 导入导出封装，基于 FastExcel</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>tech.qunxu</groupId>
+            <artifactId>qunxu-common</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.idev.excel</groupId>
+            <artifactId>fastexcel</artifactId>
+        </dependency>
+        <!-- Web 导出需要 Servlet API -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

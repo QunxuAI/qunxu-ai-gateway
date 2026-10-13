@@ -1,0 +1,68 @@
+spring:
+  # H2（MySQL 兼容模式）用于上下文加载冒烟测试；网关表由仓库级 sql/schema.sql 维护，此处不建表
+  datasource:
+    url: jdbc:h2:mem:qunxu;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+mybatis-plus:
+  global-config:
+    banner: false
+
+management:
+  health:
+    redis:
+      enabled: false
+    db:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      group:
+        # 测试库无表（H2 不执行 sql/schema.sql），上游健康汇总必然不可用，故从就绪组剔除以免整体 UNKNOWN
+        readiness:
+          include: readinessState
+
+gateway:
+  security:
+    enabled: false
+    static-tokens: "test-token-alice:alice,test-token-bob:bob"
+  crypto:
+    secret: "unit-test-secret-key-not-for-production"
+  health:
+    # 测试用内存健康存储，避免依赖真实 Redis（读取失败开放，不影响路由）
+    store: in-memory
+  rate-limit:
+    # 同上：限流计数走进程内令牌桶，使限流相关断言在离线环境可预测
+    store: in-memory
+  config:
+    # 单测无真 Redis：不订阅 gw:config:version，否则会因连不上而无限退避重连刷日志
+    # （真 Redis 上的订阅行为由 GatewayFullStackIT 覆盖）
+    pubsub-enabled: false
+  quota:
+    enabled: false
+
+logging:
+  level:
+    root: WARN
+    tech.qunxu.module.gateway: INFO
+
+# 数据面放行（与 qunxu-server/application.yaml 一致）：测试上下文不加载 server 的 yaml，
+# 需在此为 /v1/** 配置免登录，否则安全链会 401 拒绝数据面请求
+qunxu:
+  security:
+    permit-all-urls:
+      - /v1/**
+      - /anthropic/**
+      - /actuator/health
+      - /actuator/health/**
+      - /actuator/info
+      - /actuator/prometheus

@@ -1,0 +1,13 @@
+# 敏感词种子库（内置基础库）
+# 每行格式: word|category|level|action
+#   category: 涉政/色情/暴恐/广告/辱骂 等
+#   level:    LOW / MEDIUM / HIGH
+#   action:   BLOCK / MASK / WARN
+# 以 # 开头为注释，空行忽略。数据库 sensitive_word 表中的启用词条会在刷新时与此处合并。
+赌博|广告|HIGH|BLOCK
+诈骗|广告|HIGH|BLOCK
+色情|色情|HIGH|BLOCK
+毒品|暴恐|HIGH|BLOCK
+枪支|暴恐|HIGH|BLOCK
+暴力|暴恐|MEDIUM|BLOCK
+代办发票|广告|MEDIUM|MASK

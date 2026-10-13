@@ -1,0 +1,109 @@
+# QunxuAI-Gateway 一键部署编排：MySQL 8 + Redis 7 + 后端服务 + 前端 Web
+# 用法（在仓库根目录执行）：
+#   docker compose up -d --build
+#   部署完成后访问：http://localhost（前端 Web，含后端 /admin-api 反代）
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: qunxu-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD:-123456}"
+      MYSQL_DATABASE: qunxu_ai
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      # 首次启动自动执行：建表 + 初始化数据（幂等，容器重建不会重复污染）
+      - qunxu-mysql-data:/var/lib/mysql
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./sql/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_PASSWORD:-123456}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      - qunxu-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: qunxu-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - qunxu-redis-data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      - qunxu-net
+
+  server:
+    image: qunxu-ai-gateway:0.1.0
+    build:
+      context: .
+      dockerfile: qunxu-server/Dockerfile
+    container_name: qunxu-server
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:-123456}"
+      MYSQL_MASTER_URL: "jdbc:mysql://mysql:3306/qunxu_ai?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+      MYSQL_SLAVE_URL: "jdbc:mysql://mysql:3306/qunxu_ai?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ""
+      # 数据面鉴权开关：生产环境建议置 true 并配置静态令牌/签发 JWT
+      GATEWAY_SECURITY_ENABLED: "${GATEWAY_SECURITY_ENABLED:-false}"
+      GATEWAY_CRYPTO_SECRET: "${GATEWAY_CRYPTO_SECRET:-qunxu-default-dev-secret-change-me}"
+    ports:
+      - "${SERVER_PORT:-48080}:48080"
+    healthcheck:
+      # 基础镜像未必内置 curl/wget，用 bash 的 /dev/tcp 探测端口连通性即可
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/48080'"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+    networks:
+      - qunxu-net
+
+  web:
+    image: qunxu-ai-ui:0.1.0
+    build:
+      context: ./qunxu-ui
+      dockerfile: Dockerfile
+    container_name: qunxu-web
+    restart: unless-stopped
+    depends_on:
+      server:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-80}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+    networks:
+      - qunxu-net
+
+volumes:
+  qunxu-mysql-data:
+  qunxu-redis-data:
+
+networks:
+  qunxu-net:
+    driver: bridge

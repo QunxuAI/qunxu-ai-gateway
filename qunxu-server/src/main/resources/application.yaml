@@ -1,0 +1,199 @@
+server:
+  port: 48080
+  shutdown: graceful
+
+spring:
+  application:
+    name: qunxu-server
+  # 优雅关停：IDE/命令行停止时等待在途请求最多 3s 即强制退出，
+  # 避免默认 30s 等待被 IDEA 升级为 SIGKILL（exit code 137）
+  lifecycle:
+    timeout-per-shutdown-phase: 3s
+  profiles:
+    # 默认使用 local 环境，可通过 --spring.profiles.active=prod 切换
+    active: local
+  autoconfigure:
+    exclude:
+      # actuator 的管理端点安全过滤器链匹配 any request，与框架的
+      # QunxuSecurityAutoConfiguration 冲突（UnreachableFilterChainException）；
+      # 排除后 /actuator/** 走 Token 认证（health 探针已在 permit-all-urls 放行）
+      - org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration
+
+# SpringDoc / Knife4j 接口文档
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    groups-order: desc
+    disable-swagger-default-url: true
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+# MyBatis Plus
+mybatis-plus:
+  configuration:
+    # 下划线转驼峰
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    banner: false
+    db-config:
+      # 主键自增
+      id-type: auto
+      # 逻辑删除（约定：2 已删除 / 0 未删除；网关实体同样遵循）
+      logic-delete-value: 2
+      logic-not-delete-value: 0
+
+# 监控与指标
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers
+  endpoint:
+    health:
+      show-details: when_authorized
+      show-components: when_authorized
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+# Qunxu AI 框架配置
+qunxu:
+  # 验证码
+  captcha:
+    enable: true
+  # 安全框架
+  security:
+    # 免登录的 URL：登录/验证码/刷新令牌 + 网关数据面（/v1/**，由网关流水线自行鉴权）
+    permit-all-urls:
+      - /admin-api/system/auth/login
+      - /admin-api/system/auth/get-captcha
+      - /admin-api/system/auth/refresh-token
+      - /v1/**
+      - /anthropic/**
+      - /v1beta/**
+      # 健康/就绪/存活探针与 info（监控组件免登录；prometheus 等敏感端点保持鉴权）
+      - /actuator/health
+      - /actuator/health/**
+      - /actuator/info
+  # 多租户
+  tenant:
+    enable: true
+    # 全局表（不参与租户过滤；其余非租户表由实体继承关系自动判断）
+    ignore-tables:
+      - system_tenant
+      - system_tenant_package
+      - system_oauth2_client
+  # 数据权限
+  data-permission:
+    enable: true
+
+# ===== 模型网关配置（绑定 gateway.*） =====
+gateway:
+  security:
+    # dev 默认关闭鉴权以便本地联调；生产置 true 并配置静态令牌（static-tokens）
+    enabled: ${GATEWAY_SECURITY_ENABLED:false}
+    issuer-uri: ${GATEWAY_JWT_ISSUER:}
+    jwk-set-uri: ${GATEWAY_JWT_JWKS:}
+    # 关闭 JWT 时可用的静态令牌（逗号分隔），仅用于本地/测试
+    static-tokens: ${GATEWAY_STATIC_TOKENS:}
+  downstream:
+    connect-timeout-ms: 10000
+    read-timeout-ms: 120000
+    max-in-memory-size: 16MB
+    max-retries: 2
+  load-balance:
+    # WEIGHTED_ROUND_ROBIN | LEAST_LATENCY | RANDOM | PRIORITY
+    default-strategy: WEIGHTED_ROUND_ROBIN
+  health:
+    enabled: true
+    # redis（多实例共享，默认）| in-memory（单机/测试）
+    store: redis
+    probe-interval-ms: 30000
+    probe-timeout-ms: 8000
+    failure-threshold: 5
+    error-rate-threshold: 0.5
+    window-size: 20
+    eject-cooldown-ms: 60000
+    recovery-success-threshold: 2
+    distributed-lock: true
+    # EWMA 平均时延平滑系数（最小延迟负载均衡用）与健康 hash 的 TTL（秒）
+    latency-alpha: 0.3
+    health-ttl-seconds: 86400
+  audit:
+    enabled: true
+    batch-size: 50
+    flush-interval-ms: 1000
+    queue-capacity: 10000
+    max-body-length: 8192
+    mask-sensitive: true
+  rate-limit:
+    enabled: true
+    # 调用人级默认许可（次/分钟）；<=0 表示不限制
+    default-permits-per-minute: ${GATEWAY_RATE_LIMIT_PER_MINUTE:600}
+    # redis（多实例共享，默认）| in-memory（单机/测试）
+    store: ${GATEWAY_RATE_LIMIT_STORE:redis}
+    # 令牌桶容量 = 每分钟许可数 × burst-ratio，>=1 时允许等比短时突发
+    burst-ratio: 1.0
+    # Redis 抖动时是否放行（默认放行，避免限流组件成为单点）
+    fail-open: true
+    # 额外按「调用人 + 模型」维度限流
+    per-model-enabled: true
+    default-model-permits-per-minute: 300
+  quota:
+    # 每日 Token 配额（默认关闭；开启后按 scope 汇总 total_tokens）
+    enabled: ${GATEWAY_QUOTA_ENABLED:false}
+    # 默认每日 Token 上限；<=0 表示不限
+    default-daily-tokens: 0
+    # caller（按调用人，默认）| tenant（按租户汇总）
+    scope: caller
+  admin:
+    # 分页查询每页条数上限
+    max-page-size: 500
+    # 管理接口是否返回供应商凭据密文（默认仅返回是否已设置的标记）
+    expose-credentials: false
+  guardrail:
+    enabled: true
+    max-input-length: 32768
+    max-output-length: 65536
+    # 脱敏默认模式：star（等长 * 掩码，不可逆）| placeholder（{{TYPE_n}} 占位符 + 响应本地还原，P0 隐私模式）
+    mask-mode: ${GATEWAY_GUARDRAIL_MASK_MODE:star}
+  moderation:
+    enabled: true
+    # builtin | aliyun | llm（可组合，按策略配置）
+    default-provider: builtin
+  crypto:
+    # 用于加密供应商凭证（生产环境务必通过环境变量覆盖）
+    secret: ${GATEWAY_CRYPTO_SECRET:qunxu-default-dev-secret-change-me}
+  config:
+    # 多实例配置热失效：写库后经 Redis 频道 gw:config:version 广播，各实例收到即清本地 Caffeine 缓存。
+    # 关闭后仅靠缓存 TTL 收敛（单实例部署可关；无 Redis 环境必须关，否则会持续重连刷日志）
+    pubsub-enabled: ${GATEWAY_CONFIG_PUBSUB_ENABLED:true}
+  sticky:
+    # 会话级供应商粘性：同一会话（同一调用人 + X-Session-Id）固定复用首次选定的通道，
+    # 避免多轮对话在供应商间漂移导致 Anthropic 思考块续传 / OpenAI Responses 加密续传失效。
+    # 默认关闭（保持原行为）；开启后绑定存 Redis（TTL 自动过期），Redis 不可用自动降级普通路由。
+    enabled: ${GATEWAY_STICKY_ENABLED:false}
+    ttl-seconds: ${GATEWAY_STICKY_TTL_SECONDS:3600}
+    header-name: ${GATEWAY_STICKY_HEADER:X-Session-Id}
+
+logging:
+  output.ansi.enabled: ${SPRING_OUTPUT_ANSI_ENABLED:detect}
+  level:
+    root: INFO
+    tech.qunxu.module.gateway: DEBUG
+    reactor.netty.http.client: INFO
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%-5level) %clr([%thread]){faint} %clr([%X{traceId:-}]){cyan} %clr(%logger{36}){magenta} - %msg%n%wEx"

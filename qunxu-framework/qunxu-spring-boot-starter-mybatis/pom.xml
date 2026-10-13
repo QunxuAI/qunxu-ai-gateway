@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>qunxu-framework</artifactId>
+        <groupId>tech.qunxu</groupId>
+        <version>${revision}</version>
+    </parent>
+    <artifactId>qunxu-spring-boot-starter-mybatis</artifactId>
+    <description>数据库连接池、事务、MyBatis Plus 拓展（分页、字段自动填充）</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>tech.qunxu</groupId>
+            <artifactId>qunxu-common</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- Web 相关 -->
+        <dependency>
+            <groupId>tech.qunxu</groupId>
+            <artifactId>qunxu-spring-boot-starter-security</artifactId>
+            <version>${revision}</version>
+            <scope>provided</scope> <!-- 设置为 provided，只有 DefaultDBFieldHandler 的 LoginUserProvider 使用到 -->
+        </dependency>
+
+        <!-- DB 相关 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot4-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId> <!-- 分页、租户等内置拦截器需要 JSqlParser -->
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>dynamic-datasource-spring-boot4-starter</artifactId> <!-- 多数据源（主从、读写分离） -->
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+</project>

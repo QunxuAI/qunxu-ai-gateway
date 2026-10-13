@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>qunxu-ai</artifactId>
+        <groupId>tech.qunxu</groupId>
+        <version>${revision}</version>
+    </parent>
+    <artifactId>qunxu-module-gateway</artifactId>
+    <packaging>jar</packaging>
+    <name>${project.artifactId}</name>
+    <description>模型网关模块：OpenAI/Anthropic 兼容数据面 + 供应商/通道/模型配置、路由与健康自愈、安全围栏、内容审计、限流配额、调用审计等管理面</description>
+
+    <dependencies>
+        <!-- Qunxu 框架：MyBatis-Plus（分页/字段填充 + tech.qunxu Mapper 扫描）、安全（登录用户上下文） -->
+        <dependency>
+            <groupId>tech.qunxu</groupId>
+            <artifactId>qunxu-spring-boot-starter-mybatis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tech.qunxu</groupId>
+            <artifactId>qunxu-spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tech.qunxu</groupId>
+            <artifactId>qunxu-spring-boot-starter-redis</artifactId>
+        </dependency>
+
+        <!-- Web MVC 注解（@RestController 等）与 Servlet API -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- WebFlux 客户端与响应式类型：WebClient 调用下游、Mono/Flux 流水线、SSE 流式 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <!-- 响应式 Redis（ReactiveStringRedisTemplate / pub-sub 配置热失效） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
+        </dependency>
+
+        <!-- 校验 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- 指标与健康（GatewayMetrics / UpstreamHealthIndicator / 健康就绪组） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- 本地缓存（Caffeine）：配置缓存失效收敛 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+        <!-- API 文档分组（与 qunxu-server 的 springdoc webmvc 一致） -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+
+        <!-- MySQL 驱动 -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- 熔断与重试（reactor 集成） -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-reactor</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-circuitbreaker</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+
+        <!-- 指标导出 + Reactor 上下文传播（MDC 桥接） -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>context-propagation</artifactId>
+        </dependency>
+
+        <!-- Test 测试相关 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- H2：仅用于上下文加载冒烟测试（MySQL 兼容模式），不进入运行时 -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- WireMock：下游供应商 HTTP/SSE 桩。用 standalone 阴影包，避免其内置 Jackson2/Jetty
+             与项目的 Jackson3(tools.jackson) 及 Reactor Netty 产生类路径冲突 -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>${wiremock.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Testcontainers：真实 MySQL + Redis(健康/限流/配置 pub-sub) 集成测试 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-mysql</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <testResources>
+            <!-- 引用仓库级 SQL（sql/），供 GatewayFullStackIT 用 spring.sql.init 建表 -->
+            <testResource>
+                <directory>${project.basedir}/../sql</directory>
+                <targetPath>sql</targetPath>
+                <includes>
+                    <include>schema.sql</include>
+                    <include>data.sql</include>
+                </includes>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
+    </build>
+</project>

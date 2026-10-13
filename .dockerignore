@@ -1,0 +1,16 @@
+# 构建上下文排除：避免把本地构建产物/依赖拷贝进 Docker 构建
+**/target/
+**/node_modules/
+**/dist/
+**/.flattened-pom.xml
+**/.idea/
+**/*.iml
+**/.DS_Store
+**/logs/
+**/*.log
+.qm2-repo/
+.m2-repo/
+.pw/
+
+# 本地敏感配置不入镜像
+**/application-local.yaml

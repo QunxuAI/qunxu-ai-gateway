@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>qunxu-framework</artifactId>
+        <groupId>tech.qunxu</groupId>
+        <version>${revision}</version>
+    </parent>
+    <artifactId>qunxu-spring-boot-starter-biz-tenant</artifactId>
+    <description>多租户业务组件，提供租户上下文、租户拦截器等</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>tech.qunxu</groupId>
+            <artifactId>qunxu-common</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>tech.qunxu</groupId>
+            <artifactId>qunxu-spring-boot-starter-mybatis</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>tech.qunxu</groupId>
+            <artifactId>qunxu-spring-boot-starter-security</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId> <!-- TenantLineInnerInterceptor 需要 JSqlParser -->
+        </dependency>
+    </dependencies>
+</project>

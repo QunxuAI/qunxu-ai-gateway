@@ -1,0 +1,40 @@
+# Docker 部署环境配置（可提交入库，与 docker-compose.yml 配套使用）
+# 所有连接信息通过环境变量注入，容器编排见仓库根目录 docker-compose.yml
+spring:
+  datasource:
+    dynamic:
+      primary: master # 默认数据源：主库（写）
+      strict: false
+      hikari:
+        minimum-idle: 2
+        maximum-pool-size: 10
+        connection-timeout: 30000
+      datasource:
+        master: # 主库（写）
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: ${MYSQL_MASTER_URL:jdbc:mysql://mysql:3306/qunxu_ai?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+          username: ${MYSQL_USERNAME:root}
+          password: "${MYSQL_PASSWORD:123456}"
+        slave: # 从库（读）：Docker 演示环境与主库同源，生产环境请配置只读从库地址
+          lazy: true
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: ${MYSQL_SLAVE_URL:jdbc:mysql://mysql:3306/qunxu_ai?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+          username: ${MYSQL_USERNAME:root}
+          password: "${MYSQL_PASSWORD:123456}"
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+      password: "${REDIS_PASSWORD:}"
+      timeout: 10s
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 0
+
+# 日志配置
+logging:
+  level:
+    tech.qunxu: info

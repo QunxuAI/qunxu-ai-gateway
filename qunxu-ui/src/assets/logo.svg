@@ -1,0 +1,20 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="qunxu-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6366F1"/>
+      <stop offset="0.55" stop-color="#A855F7"/>
+      <stop offset="1" stop-color="#EC4899"/>
+    </linearGradient>
+  </defs>
+  <!-- 渐变圆角底 -->
+  <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#qunxu-grad)"/>
+  <!-- Q 环形（右上留缺口，呼应“绪”之开端） -->
+  <path d="M 24 13.5 A 9.3 9.3 0 1 0 33.3 22.8" stroke="#FFFFFF" stroke-width="4.4" stroke-linecap="round"/>
+  <!-- Q 尾巴：向下的弧线 -->
+  <path d="M 29.8 30 C 32 32.6 33.4 34.6 34.2 36.8" stroke="#FFFFFF" stroke-width="4.4" stroke-linecap="round"/>
+  <!-- 尾巴端点：代表“群”的聚合光点（AI 节点） -->
+  <circle cx="35" cy="37.6" r="2.4" fill="#FFFFFF"/>
+  <!-- 右上角星群点缀：呼应“群绪”的多个节点 -->
+  <circle cx="36.2" cy="13.6" r="1.6" fill="#FFFFFF" fill-opacity="0.95"/>
+  <circle cx="39.6" cy="10.8" r="1.15" fill="#FFFFFF" fill-opacity="0.6"/>
+</svg>
