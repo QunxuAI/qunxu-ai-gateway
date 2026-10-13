@@ -1,12 +1,15 @@
 # QunxuAI-Gateway（模型网关）
 
+<p align="center">
+  <b>简体中文</b> · <a href="README.en.md">English</a>
+</p>
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.1.0-brightgreen)]()
 [![Java](https://img.shields.io/badge/Java-21-orange)]()
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-green)]()
 [![GitHub](https://img.shields.io/badge/GitHub-QunxuAI%2Fqunxu--ai--gateway-181717?logo=github)](https://github.com/QunxuAI/qunxu-ai-gateway)
 [![Docker Hub](https://img.shields.io/badge/Docker-Hub-2496ed?logo=docker)](https://hub.docker.com/r/qunxuai/qunxu-ai-gateway)
-[![README English](https://img.shields.io/badge/README-English-blue)](README.en.md)
 
 **QunxuAI-Gateway** 是一个面向大模型应用的**统一模型网关**，自带完整的管理后台（多租户 / 用户 / 权限 / 菜单）：
 

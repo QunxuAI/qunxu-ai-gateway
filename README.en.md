@@ -1,12 +1,15 @@
 # QunxuAI-Gateway (Model Gateway)
 
+<p align="center">
+  <a href="README.md">简体中文</a> · <b>English</b>
+</p>
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.1.0-brightgreen)]()
 [![Java](https://img.shields.io/badge/Java-21-orange)]()
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-green)]()
 [![GitHub](https://img.shields.io/badge/GitHub-QunxuAI%2Fqunxu--ai--gateway-181717?logo=github)](https://github.com/QunxuAI/qunxu-ai-gateway)
 [![Docker Hub](https://img.shields.io/badge/Docker-Hub-2496ed?logo=docker)](https://hub.docker.com/r/qunxuai/qunxu-ai-gateway)
-[![README 中文](https://img.shields.io/badge/README-%E4%B8%AD%E6%96%87-blue)](README.md)
 
 **QunxuAI-Gateway** is a **unified model gateway** for LLM applications, shipped with a full admin console (multi-tenant / user / permission / menu):
 
