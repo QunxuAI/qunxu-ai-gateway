@@ -4,6 +4,8 @@
 [![Version](https://img.shields.io/badge/version-0.1.0-brightgreen)]()
 [![Java](https://img.shields.io/badge/Java-21-orange)]()
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-green)]()
+[![GitHub](https://img.shields.io/badge/GitHub-QunxuAI%2Fqunxu--ai--gateway-181717?logo=github)](https://github.com/QunxuAI/qunxu-ai-gateway)
+[![Docker Hub](https://img.shields.io/badge/Docker-Hub-2496ed?logo=docker)](https://hub.docker.com/r/qunxuai/qunxu-ai-gateway)
 [![README English](https://img.shields.io/badge/README-English-blue)](README.en.md)
 
 **QunxuAI-Gateway** 是一个面向大模型应用的**统一模型网关**，自带完整的管理后台（多租户 / 用户 / 权限 / 菜单）：
@@ -155,7 +157,7 @@ docker run -d -p 80:80 -p 48080:48080 --name qunxu-ai-gateway qunxu-ai-gateway:0
 - 首次启动自动初始化数据库（建表 + 种子数据，幂等，重启不重复执行）
 - 数据默认存容器内；可用卷持久化：`docker run -v qunxu-mysql:/var/lib/mysql -v qunxu-redis:/var/lib/redis ...`
 - 可自定义环境变量：`MYSQL_PASSWORD`、`GATEWAY_SECURITY_ENABLED`、`GATEWAY_CRYPTO_SECRET` 等
-- 镜像文件见 [allinone/](/Users/ethanwang/work/code/QunxuAI/QunxuAI-Gateway/allinone/Dockerfile)（Dockerfile / nginx.conf / supervisord.conf / entrypoint.sh）
+- 镜像文件见 [allinone/](allinone/)（Dockerfile / nginx.conf / supervisord.conf / entrypoint.sh）
 
 ### 方式二：Docker Compose 多容器编排
 

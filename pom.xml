@@ -20,7 +20,7 @@
 
     <name>${project.artifactId}</name>
     <description>QunxuAI-Gateway - 统一大模型网关（多协议数据面 + 管理面 + Vue 管理端）</description>
-    <url>https://github.com/qunxu-ai/qunxu-ai</url>
+    <url>https://github.com/QunxuAI/qunxu-ai-gateway</url>
 
     <properties>
         <revision>0.1.0</revision>
